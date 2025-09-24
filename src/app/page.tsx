@@ -1,103 +1,132 @@
-import Image from "next/image";
+import { createClient } from '@/lib/supabase/server'
+import AuthButton from '@/components/auth/AuthButton'
+import ImageUpload from '@/components/ImageUpload'
+import LandingButtons from '@/components/LandingButtons'
+import { Sparkles, Brain, Zap } from 'lucide-react'
 
-export default function Home() {
+export default async function Home() {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-pink-50">
+      {/* Header */}
+      <header className="w-full p-4 sm:p-6">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-r from-orange-600 to-red-600 rounded-xl flex items-center justify-center">
+              <span className="text-xl font-bold text-white">🍽️</span>
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900">FoodAI</h1>
+          </div>
+          <AuthButton user={user} />
         </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        {!user ? (
+          /* Landing Page for Non-authenticated Users */
+          <div className="text-center space-y-16">
+            {/* Hero Section */}
+            <div className="space-y-8">
+              <div className="space-y-4">
+                <h2 className="text-5xl sm:text-6xl font-bold text-gray-900">
+                  AI로 분석하는
+                  <span className="block bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+                    음식 영양 정보
+                  </span>
+                </h2>
+                <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+                  음식 사진 한 장으로 칼로리와 3대 영양소를 즉시 분석하세요.
+                  AI 기술로 정확하고 빠른 영양 분석을 경험해보세요.
+                </p>
+              </div>
+
+              <LandingButtons />
+            </div>
+
+            {/* Features */}
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 text-center shadow-lg">
+                <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+                  <Sparkles className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">AI 기반 분석</h3>
+                <p className="text-gray-600">
+                  최신 AI 기술로 음식 이미지를 분석하여 정확한 영양 정보를 제공합니다.
+                </p>
+              </div>
+
+              <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 text-center shadow-lg">
+                <div className="w-16 h-16 bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+                  <Brain className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">스마트 인식</h3>
+                <p className="text-gray-600">
+                  다양한 음식을 자동으로 인식하고 칼로리와 3대 영양소를 계산합니다.
+                </p>
+              </div>
+
+              <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 text-center shadow-lg">
+                <div className="w-16 h-16 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+                  <Zap className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">즉시 분석</h3>
+                <p className="text-gray-600">
+                  사진 업로드 후 몇 초 만에 상세한 영양 정보를 확인할 수 있습니다.
+                </p>
+              </div>
+            </div>
+
+            {/* Demo Image */}
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-lg">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">이렇게 사용하세요</h3>
+              <div className="grid md:grid-cols-3 gap-6 items-center">
+                <div className="text-center">
+                  <div className="w-20 h-20 bg-gradient-to-r from-orange-600 to-red-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+                    <span className="text-2xl text-white">📸</span>
+                  </div>
+                  <h4 className="font-semibold text-gray-900 mb-2">1. 사진 업로드</h4>
+                  <p className="text-sm text-gray-600">음식 사진을 업로드하세요</p>
+                </div>
+
+                <div className="text-center">
+                  <div className="w-20 h-20 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+                    <span className="text-2xl text-white">🤖</span>
+                  </div>
+                  <h4 className="font-semibold text-gray-900 mb-2">2. AI 분석</h4>
+                  <p className="text-sm text-gray-600">AI가 음식을 자동 분석합니다</p>
+                </div>
+
+                <div className="text-center">
+                  <div className="w-20 h-20 bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+                    <span className="text-2xl text-white">📊</span>
+                  </div>
+                  <h4 className="font-semibold text-gray-900 mb-2">3. 결과 확인</h4>
+                  <p className="text-sm text-gray-600">상세한 영양 정보를 확인하세요</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* Image Upload Section for Authenticated Users */
+          <div className="space-y-8">
+            <div className="text-center">
+              <h2 className="text-4xl font-bold text-gray-900 mb-4">
+                안녕하세요, {user.email?.split('@')[0]}님! 👋
+              </h2>
+              <p className="text-lg text-gray-600">
+                음식 사진을 업로드하고 AI 분석을 시작해보세요.
+              </p>
+            </div>
+
+            <ImageUpload />
+          </div>
+        )}
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
   );
 }
