@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Upload, Image as ImageIcon, X, Loader2, Zap, AlertCircle } from 'lucide-react'
 import Image from 'next/image'
 import toast from 'react-hot-toast'
 import { convertImageToBase64, getImageMimeType, formatFileSize } from '@/lib/utils/imageUtils'
+import { createClient } from '@/lib/supabase/client'
 
 interface NutritionAnalysis {
   calories: number
@@ -23,7 +24,36 @@ export default function ImageUpload() {
   const [analysis, setAnalysis] = useState<NutritionAnalysis | null>(null)
   const [analysisStep, setAnalysisStep] = useState<string>('')
   const [uploadProgress, setUploadProgress] = useState<number>(0)
+  const [userUID, setUserUID] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const supabase = createClient()
+
+  // 컴포넌트 마운트 시 사용자 UID 가져오기
+  useEffect(() => {
+    const getUserUID = async () => {
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser()
+        if (error) {
+          console.error('사용자 정보 가져오기 실패:', error)
+          toast.error('사용자 인증 정보를 가져올 수 없습니다.')
+          return
+        }
+
+        if (user) {
+          setUserUID(user.id)
+          console.log('🔐 사용자 UID:', user.id)
+        } else {
+          console.warn('⚠️ 인증된 사용자가 없습니다.')
+          toast.error('로그인이 필요합니다.')
+        }
+      } catch (error) {
+        console.error('사용자 정보 확인 중 오류:', error)
+        toast.error('사용자 정보 확인에 실패했습니다.')
+      }
+    }
+
+    getUserUID()
+  }, [])
 
   const handleImageSelect = (file: File) => {
     if (file.type.startsWith('image/')) {
@@ -68,7 +98,15 @@ export default function ImageUpload() {
   }
 
   const analyzeImage = async () => {
-    if (!selectedImage) return
+    if (!selectedImage) {
+      toast.error('이미지를 먼저 선택해주세요.')
+      return
+    }
+
+    if (!userUID) {
+      toast.error('사용자 인증이 필요합니다. 로그인을 확인해주세요.')
+      return
+    }
 
     setIsAnalyzing(true)
     setUploadProgress(0)
@@ -79,12 +117,13 @@ export default function ImageUpload() {
       const webhookUrl = process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL
 
       console.log('🔗 웹훅 URL:', webhookUrl)
+      console.log('🔐 사용자 UID:', userUID)
 
       if (!webhookUrl) {
         throw new Error('웹훅 URL이 설정되지 않았습니다. 환경변수를 확인해주세요.')
       }
 
-      // Step 2: FormData로 이미지 파일 전송
+      // Step 2: FormData로 이미지 파일 전송 (user_id 포함)
       setAnalysisStep('이미지 파일을 준비하는 중...')
       setUploadProgress(30)
 
@@ -94,12 +133,14 @@ export default function ImageUpload() {
       formData.append('mimeType', selectedImage.type)
       formData.append('fileSize', selectedImage.size.toString())
       formData.append('timestamp', new Date().toISOString())
+      formData.append('user_id', userUID) // DB용 user_id 필드로 추가
 
       console.log('📤 이미지 파일로 전송:', {
         fileName: selectedImage.name,
         mimeType: selectedImage.type,
         fileSize: selectedImage.size,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        user_id: userUID
       })
 
       // Step 3: N8N 웹훅으로 이미지 파일 POST 요청
